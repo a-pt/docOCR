@@ -1,48 +1,16 @@
-# Initialize Mistral client with API key
-from mistralai import Mistral
-# Import required libraries
-from pathlib import Path
-from mistralai import DocumentURLChunk, ImageURLChunk, TextChunk
-import json
-
 import os
+import json
 import base64
+from pathlib import Path
 from dotenv import load_dotenv
+from mistralai import Mistral, DocumentURLChunk
+from mistralai.models import OCRResponse
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 
-api_key = os.getenv("MISTRAL_API_KEY") 
+api_key = os.getenv("MISTRAL_API_KEY")
 client = Mistral(api_key=api_key)
-
-# Verify PDF file exists
-pdf_file = Path("mst.pdf")
-assert pdf_file.is_file()
-
-# Upload PDF file to Mistral's OCR service
-uploaded_file = client.files.upload(
-    file={
-        "file_name": pdf_file.stem,
-        "content": pdf_file.read_bytes(),
-    },
-    purpose="ocr",
-)
-
-
-# Get URL for the uploaded file
-signed_url = client.files.get_signed_url(file_id=uploaded_file.id, expiry=1)
-
-# Process PDF with OCR, including embedded images
-pdf_response = client.ocr.process(
-    document=DocumentURLChunk(document_url=signed_url.url),
-    model="mistral-ocr-latest",
-    include_image_base64=True
-)
-
-#View the OCR response
-from mistralai.models import OCRResponse
-from IPython.display import Markdown, display
-
 
 def replace_images_in_markdown(markdown_str: str, images_dict: dict) -> str:
     """
@@ -103,8 +71,39 @@ def get_combined_markdown(ocr_response: OCRResponse) -> str:
 
     return "\n\n".join(markdowns)
 
-# Save combined markdowns and images to a file
-markdown_content = get_combined_markdown(pdf_response)
-output_file = Path("output.md")
-output_file.write_text(markdown_content)
-print(f"Markdown content saved to {output_file}")
+def main():
+    # Verify PDF file exists
+    pdf_file = Path("mst.pdf")
+    if not pdf_file.is_file():
+        print(f"Error: File {pdf_file} not found.")
+        return
+
+    # Upload PDF file to Mistral's OCR service
+    print(f"Uploading {pdf_file}...")
+    uploaded_file = client.files.upload(
+        file={
+            "file_name": pdf_file.stem,
+            "content": pdf_file.read_bytes(),
+        },
+        purpose="ocr",
+    )
+
+    # Get URL for the uploaded file
+    signed_url = client.files.get_signed_url(file_id=uploaded_file.id, expiry=1)
+
+    # Process PDF with OCR, including embedded images
+    print("Processing document...")
+    pdf_response = client.ocr.process(
+        document=DocumentURLChunk(document_url=signed_url.url),
+        model="mistral-ocr-latest",
+        include_image_base64=True
+    )
+
+    # Save combined markdowns and images to a file
+    markdown_content = get_combined_markdown(pdf_response)
+    output_file = Path("output.md")
+    output_file.write_text(markdown_content)
+    print(f"Markdown content saved to {output_file}")
+
+if __name__ == "__main__":
+    main()
