@@ -1,13 +1,17 @@
 # Document OCR with Mistral AI
 
-This project demonstrates how to perform Optical Character Recognition (OCR) on PDF documents using the Mistral AI API. It processes a PDF file, extracts text and embedded images, and generates a clean Markdown representation of the content.
+This project demonstrates how to perform Optical Character Recognition (OCR) on documents using the Mistral AI API. It includes tools for processing both PDFs and individual images.
 
 ## Features
 
-- **PDF to Markdown**: Converts PDF documents into formatted Markdown text.
-- **Image Extraction**: Extracts embedded images from the PDF and saves them locally.
-- **Smart Formatting**: Replaces image placeholders in the OCR output with links to the locally saved image files.
-- **Mistral AI Integration**: Uses the powerful `mistral-ocr-latest` model for high-quality results.
+- **PDF Processing (`ocr_pdf.py`)**:
+    - Converts PDF documents into formatted Markdown text.
+    - Extracts embedded images from the PDF and saves them locally.
+    - Replaces image placeholders in the OCR output with links to the locally saved image files.
+- **Image Processing (`ocr_image.py`)**:
+    - Performs OCR on single images (e.g., receipts).
+    - Uses Mistral's `pixtral-12b-latest` to extract structured data (JSON) from the image content.
+    - Ideal for automating data entry from receipts, invoices, etc.
 
 ## Prerequisites
 
@@ -42,28 +46,36 @@ This project demonstrates how to perform Optical Character Recognition (OCR) on 
 
 ## Usage
 
-1.  **Place your PDF file** in the project directory.
-    *   By default, the script looks for `mst.pdf`. You can modify the `pdf_file` variable in `ocr_doc_image.py` to point to your specific file.
+### 1. Process a PDF (`ocr_pdf.py`)
 
-2.  **Run the script:**
+This script converts a PDF into a Markdown file with extracted images.
 
+1.  Place your PDF file in the project directory (default is `mst.pdf`).
+2.  Run the script:
     ```bash
-    python ocr_doc_image.py
+    python ocr_pdf.py
     ```
+3.  **Output**:
+    - `output.md`: The full content of the PDF in Markdown.
+    - `images/`: Directory containing all extracted images.
 
-## Output
+### 2. Process an Image (`ocr_image.py`)
 
-The script will generate the following artifacts:
+This script extracts structured JSON data from a single image.
 
--   **`output.md`**: The full content of the PDF in Markdown format.
--   **`images/`**: A directory containing all images extracted from the PDF.
-
-You can view `output.md` in any Markdown viewer (e.g., VS Code, Obsidian, GitHub) to see the text and images rendered together.
+1.  Place your image file in the project directory (default is `receipt.png`).
+2.  Run the script:
+    ```bash
+    python ocr_image.py
+    ```
+3.  **Output**:
+    - Prints the structured JSON data extracted from the image to the console.
 
 ## Project Structure
 
--   `ocr_doc_image.py`: Main script for processing the PDF.
+-   `ocr_pdf.py`: Script for processing PDFs to Markdown.
+-   `ocr_image.py`: Script for processing images to structured JSON.
 -   `requirements.txt`: Python package dependencies.
--   `.env`: Configuration file for API keys (not committed to version control).
+-   `.env`: Configuration file for API keys.
 -   `images/`: Directory where extracted images are saved.
--   `output.md`: The resulting Markdown file.
+-   `output.md`: The resulting Markdown file from PDF processing.
